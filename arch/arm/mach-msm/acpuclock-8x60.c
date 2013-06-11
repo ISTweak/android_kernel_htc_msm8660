@@ -197,7 +197,7 @@ static struct clkctl_l2_speed l2_freq_tbl_v2[] = {
 	[20] = {1458000,  1, 0x1B, 1212500, 1275000, 4},
 	[21] = {1512000,  1, 0x1C, 1212500, 1275000, 4},
 	[22] = {1566000,  1, 0x1D, 1225000, 1275000, 4},
-	[23] = {1620000,  1, 0x1E, 1250000, 1275000, 4},
+//	[23] = {1620000,  1, 0x1E, 1250000, 1275000, 4},
 };
 
 #define L2(x) (&l2_freq_tbl_v2[(x)])
@@ -233,8 +233,8 @@ static struct clkctl_acpu_speed acpu_freq_tbl_oc[] = {
   { {1, 1}, 1620000,  ACPU_SCPLL, 0, 0, 1, 0x1E, L2(22), 1200000, 0x03006000},
   { {1, 1}, 1674000,  ACPU_SCPLL, 0, 0, 1, 0x1F, L2(22), 1225000, 0x03006000},
   { {1, 1}, 1728000,  ACPU_SCPLL, 0, 0, 1, 0x20, L2(22), 1250000, 0x03006000},
-  { {1, 1}, 1782000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(22), 1275000, 0x03006000},
-  { {1, 1}, 1836000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(22), 1300000, 0x03006000},
+//  { {1, 1}, 1782000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(22), 1275000, 0x03006000},
+//  { {1, 1}, 1836000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(22), 1300000, 0x03006000},
   { {0, 0}, 0 },
 };
 
@@ -903,14 +903,8 @@ static int __init acpuclk_8x60_init(struct acpuclk_soc_data *soc_data)
 	bus_init();
 
 	/* Improve boot time by ramping up CPUs immediately. */
-#ifdef CONFIG_MSM_CPU_FREQ_SET_MIN_MAX
-		for_each_online_cpu(cpu)
-			acpuclk_8x60_set_rate(cpu, CONFIG_MSM_CPU_FREQ_MAX, SETRATE_INIT);
-#else
-		for_each_online_cpu(cpu)
-			acpuclk_8x60_set_rate(cpu, 1512000, SETRATE_INIT);
-#endif
-
+	for_each_online_cpu(cpu)
+		acpuclk_8x60_set_rate(cpu, 1512000, SETRATE_INIT);
 
 	acpuclk_register(&acpuclk_8x60_data);
 	cpufreq_table_init();
