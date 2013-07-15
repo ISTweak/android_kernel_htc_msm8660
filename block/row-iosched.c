@@ -266,13 +266,35 @@ static void row_add_request(struct request_queue *q,
 	rd->nr_reqs[rq_data_dir(rq)]++;
 	rq_set_fifo_time(rq, jiffies); /* for statistics*/
 
-	if (queue_idling_enabled[rqueue->prio]) {
-		if (delayed_work_pending(&rd->read_idle.idle_work))
-			(void)cancel_delayed_work(
-				&rd->read_idle.idle_work);
-		if (ktime_to_ms(ktime_sub(ktime_get(),
-				rqueue->idle_data.last_insert_time)) <
-				rd->read_idle.freq) {
+	if (rq->cmd_flags & REQ_URGENT) {
+		WARN_ON(1);
+		blk_dump_rq_flags(rq, "");
+		rq->cmd_flags &= ~REQ_URGENT;
+	}
+
+	if (row_queues_def[rqueue->prio].idling_enabled) {
+		if (rd->rd_idle_data.idling_queue_idx == rqueue->prio &&
+		    hrtimer_active(&rd->rd_idle_data.hr_timer)) {
+			if (hrtimer_try_to_cancel(
+				&rd->rd_idle_data.hr_timer) >= 0) {
+				row_log_rowq(rd, rqueue->prio,
+				    "Canceled delayed work on %d",
+				    rd->rd_idle_data.idling_queue_idx);
+				rd->rd_idle_data.idling_queue_idx =
+					ROWQ_MAX_PRIO;
+			}
+		}
+		diff_ms = ktime_to_ms(ktime_sub(ktime_get(),
+				rqueue->idle_data.last_insert_time));
+		if (unlikely(diff_ms < 0)) {
+			pr_err("%s(): time delta error: diff_ms < 0",
+				__func__);
+			rqueue->idle_data.begin_idling = false;
+			return;
+		}
+
+		if ((bv_page_flags & (1L << PG_readahead)) ||
+		    (diff_ms < rd->rd_idle_data.freq_ms)) {
 			rqueue->idle_data.begin_idling = true;
 			row_log_rowq(rd, rqueue->prio, "Enable idling");
 		} else {
@@ -398,7 +420,34 @@ static int row_choose_queue(struct row_data *rd)
 		return 0;
 	}
 
-	row_get_next_queue(rd);
+	/* First, go over the high priority queues */
+	for (i = 0; i < ROWQ_REG_PRIO_IDX; i++) {
+		if (!list_empty(&rd->row_queues[i].fifo)) {
+			if (hrtimer_active(&rd->rd_idle_data.hr_timer)) {
+				if (hrtimer_try_to_cancel(
+					&rd->rd_idle_data.hr_timer) >= 0) {
+					row_log(rd->dispatch_queue,
+					"Canceling delayed work on %d. RT pending",
+					     rd->rd_idle_data.idling_queue_idx);
+					rd->rd_idle_data.idling_queue_idx =
+						ROWQ_MAX_PRIO;
+				}
+			}
+
+			if (row_regular_req_pending(rd) &&
+			    (rd->reg_prio_starvation.starvation_counter >=
+			     rd->reg_prio_starvation.starvation_limit))
+				ret = IOPRIO_CLASS_BE;
+			else if (row_low_req_pending(rd) &&
+			    (rd->low_prio_starvation.starvation_counter >=
+			     rd->low_prio_starvation.starvation_limit))
+				ret = IOPRIO_CLASS_IDLE;
+			else
+				ret = IOPRIO_CLASS_RT;
+
+			goto done;
+		}
+	}
 
 	/*
 	 * Loop over all queues to find the next queue that is not empty.
@@ -426,23 +475,14 @@ static int row_choose_queue(struct row_data *rd)
 static int row_dispatch_requests(struct request_queue *q, int force)
 {
 	struct row_data *rd = (struct row_data *)q->elevator->elevator_data;
-	int ret = 0, currq, i;
+	int ret = 0, currq, ioprio_class_to_serve, start_idx, end_idx;
 
-	currq = rd->curr_queue;
-
-	/*
-	 * Find the first unserved queue (with higher priority then currq)
-	 * that is not empty
-	 */
-	for (i = 0; i < currq; i++) {
-		if (row_rowq_unserved(rd, i) &&
-		    !list_empty(&rd->row_queues[i].rqueue.fifo)) {
-			row_log_rowq(rd, currq,
-				" Preemting for unserved rowq%d", i);
-			rd->curr_queue = i;
-			row_dispatch_insert(rd);
-			ret = 1;
-			goto done;
+	if (force && hrtimer_active(&rd->rd_idle_data.hr_timer)) {
+		if (hrtimer_try_to_cancel(&rd->rd_idle_data.hr_timer) >= 0) {
+			row_log(rd->dispatch_queue,
+				"Canceled delayed work on %d - forced dispatch",
+				rd->rd_idle_data.idling_queue_idx);
+			rd->rd_idle_data.idling_queue_idx = ROWQ_MAX_PRIO;
 		}
 	}
 
