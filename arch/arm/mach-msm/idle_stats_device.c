@@ -18,7 +18,6 @@
 #include <linux/poll.h>
 #include <linux/uaccess.h>
 #include <linux/idle_stats_device.h>
-#include <linux/module.h>
 
 DEFINE_MUTEX(device_list_lock);
 LIST_HEAD(device_list);
@@ -44,8 +43,8 @@ static struct msm_idle_stats_device *_device_from_minor(unsigned int minor)
 	return ret;
 }
 
-static void update_event
-	(struct msm_idle_stats_device *device, __u32 event)
+void msm_idle_stats_update_event(struct msm_idle_stats_device *device,
+	__u32 event)
 {
 	__u32 wake_up = !device->stats->event;
 
@@ -53,6 +52,7 @@ static void update_event
 	if (wake_up)
 		wake_up_interruptible(&device->wait);
 }
+EXPORT_SYMBOL(msm_idle_stats_update_event);
 
 static enum hrtimer_restart msm_idle_stats_busy_timer(struct hrtimer *timer)
 {
@@ -65,7 +65,8 @@ static enum hrtimer_restart msm_idle_stats_busy_timer(struct hrtimer *timer)
 	 * assured that we have exclusive access to the event at this time.
 	 */
 	hrtimer_set_expires(&device->busy_timer, us_to_ktime(0));
-	update_event(device, MSM_IDLE_STATS_EVENT_BUSY_TIMER_EXPIRED);
+	msm_idle_stats_update_event(device,
+		MSM_IDLE_STATS_EVENT_BUSY_TIMER_EXPIRED);
 	return HRTIMER_NORESTART;
 }
 
@@ -102,10 +103,9 @@ static void msm_idle_stats_add_sample(struct msm_idle_stats_device *device,
 {
 	hrtimer_cancel(&device->busy_timer);
 	hrtimer_set_expires(&device->busy_timer, us_to_ktime(0));
-	if (device->stats->nr_collected >= MSM_IDLE_STATS_NR_MAX_INTERVALS) {
-		pr_warning("idle_stats_device: Overwriting samples\n");
-		device->stats->nr_collected = 0;
-	}
+	if (device->stats->nr_collected >= device->max_samples)
+		return;
+
 	device->stats->pulse_chain[device->stats->nr_collected] = *pulse;
 	device->stats->nr_collected++;
 
@@ -230,7 +230,6 @@ EXPORT_SYMBOL(msm_idle_stats_idle_start);
 void msm_idle_stats_idle_end(struct msm_idle_stats_device *device,
 				struct msm_idle_pulse *pulse)
 {
-	int tmp;
 	u32 idle_time = 0;
 	spin_lock(&device->lock);
 	if (ktime_to_us(device->idle_start) != 0) {
@@ -242,7 +241,7 @@ void msm_idle_stats_idle_end(struct msm_idle_stats_device *device,
 			MSM_IDLE_STATS_EVENT_BUSY_TIMER_EXPIRED) {
 			device->stats->event &=
 				~MSM_IDLE_STATS_EVENT_BUSY_TIMER_EXPIRED;
-			update_event(device,
+			msm_idle_stats_update_event(device,
 				MSM_IDLE_STATS_EVENT_BUSY_TIMER_EXPIRED_RESET);
 		} else if (ktime_to_us(device->busy_timer_interval) > 0) {
 			ktime_t busy_timer = device->busy_timer_interval;
@@ -255,17 +254,6 @@ void msm_idle_stats_idle_end(struct msm_idle_stats_device *device,
 				 ktime_to_us(busy_timer)))
 				busy_timer = device->remaining_time;
 		    start_busy_timer(device, busy_timer);
-		    /* If previous busy interval exceeds the current submit,
-		     * raise a busy timer expired event intentionally.
-		     */
-		    tmp = device->stats->nr_collected - 1;
-		    if (tmp > 0) {
-			if ((device->stats->pulse_chain[tmp - 1].busy_start_time
-			+ device->stats->pulse_chain[tmp - 1].busy_interval) >
-			  device->stats->pulse_chain[tmp].busy_start_time)
-				msm_idle_stats_update_event(device,
-				   MSM_IDLE_STATS_EVENT_BUSY_TIMER_EXPIRED);
-		    }
 		}
 	}
 	spin_unlock(&device->lock);
