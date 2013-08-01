@@ -392,7 +392,6 @@ void intel_dvo_init(struct drm_device *dev)
 
 		intel_dvo->dev = *dvo;
 
-<<<<<<< HEAD
 	/* GMBUS NAK handling seems to be unstable, hence let the
 	 * transmitter detection run in bit banging mode for now.
 	 */
@@ -403,18 +402,6 @@ void intel_dvo_init(struct drm_device *dev)
 	intel_gmbus_force_bit(i2c, false);
 
 	if (!dvoinit) 
-=======
-		/* GMBUS NAK handling seems to be unstable, hence let the
-		 * transmitter detection run in bit banging mode for now.
-		 */
-		intel_gmbus_force_bit(i2c, true);
-
-		dvoinit = dvo->dev_ops->init(&intel_dvo->dev, i2c);
-
-		intel_gmbus_force_bit(i2c, false);
-
-		if (!dvoinit)
->>>>>>> 2c8a315a3c8ffb644ff83bff47f09664b8654151
 			continue;
 
 		intel_encoder->type = INTEL_OUTPUT_DVO;
