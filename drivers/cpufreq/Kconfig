@@ -72,18 +72,6 @@ config CPU_FREQ_DEFAULT_GOV_BADASS
 	  governor. If unsure have a look at the help section of the
 	  driver. Fallback governor will be the performance governor.
 
-config CPU_FREQ_DEFAULT_GOV_XONDEMAND
-        bool "xondemand"
-        select CPU_FREQ_GOV_XONDEMAND
-        select CPU_FREQ_GOV_PERFORMANCE
-        help
-          Use the CPUFreq governor 'xondemand' as default. This allows
-          you to get a full dynamic frequency capable system by simply
-          loading your cpufreq low-level hardware driver.
-          Be aware that not all cpufreq drivers support the lagfree
-          governor. If unsure have a look at the help section of the
-          driver. Fallback governor will be the performance governor.
-
 config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
 	bool "conservative"
 	select CPU_FREQ_GOV_CONSERVATIVE
@@ -104,7 +92,7 @@ config CPU_FREQ_DEFAULT_GOV_HYPER
 	bool "hyper"
 	select CPU_FREQ_GOV_HYPER
 	help
-	    Use the CPUFreq governor 'hyper' as default.
+	  Use the CPUFreq governor 'hyper' as default.
 
 config CPU_FREQ_DEFAULT_GOV_INTELLIDEMAND
 	bool "intellidemand"
@@ -127,12 +115,12 @@ config CPU_FREQ_DEFAULT_GOV_LAGFREE
 	select CPU_FREQ_GOV_LAGFREE
 	select CPU_FREQ_GOV_PERFORMANCE
 	help
-	    Use the CPUFreq governor 'lagfree' as default. This allows
-	    you to get a full dynamic frequency capable system by simply
-	    loading your cpufreq low-level hardware driver.
-	    Be aware that not all cpufreq drivers support the lagfree
-	    governor. If unsure have a look at the help section of the
-	    driver. Fallback governor will be the performance governor.
+	  Use the CPUFreq governor 'lagfree' as default. This allows
+	  you to get a full dynamic frequency capable system by simply
+	  loading your cpufreq low-level hardware driver.
+	  Be aware that not all cpufreq drivers support the lagfree
+	  governor. If unsure have a look at the help section of the
+	  driver. Fallback governor will be the performance governor.
 
 config CPU_FREQ_DEFAULT_GOV_LAZY
 	bool "lazy"
@@ -145,13 +133,19 @@ config CPU_FREQ_DEFAULT_GOV_LIONHEART
 	bool "lionheart"
 	select CPU_FREQ_GOV_LIONHEART
 	help
-	 Use the CPUFreq governor 'lionheart' as default.
+	  Use the CPUFreq governor 'lionheart' as default.
+
+config CPU_FREQ_DEFAULT_GOV_LULZACTIVE
+	bool "lulzactive"
+	select CPU_FREQ_GOV_LULZACTIVE
+	help
+	  Use the CPUFreq governor 'lulzactive' as default.
 
 config CPU_FREQ_DEFAULT_GOV_LULZACTIVEQ
 	bool "lulzactiveq"
 	select CPU_FREQ_GOV_LULZACTIVEQ
 	help
-	 Use the CPUFreq governor 'lulzactiveq' as default.
+	  Use the CPUFreq governor 'lulzactiveq' as default.
 
 config CPU_FREQ_DEFAULT_GOV_ONDEMAND
 	bool "ondemand"
@@ -208,11 +202,23 @@ config CPU_FREQ_DEFAULT_GOV_WHEATLEY
 	help
 	  Use the CPUFreq governor 'wheatley' as default.
 
+config CPU_FREQ_DEFAULT_GOV_XONDEMAND
+	bool "xondemand"
+	select CPU_FREQ_GOV_XONDEMAND
+	select CPU_FREQ_GOV_PERFORMANCE
+	help
+	  Use the CPUFreq governor 'xondemand' as default. This allows
+	  you to get a full dynamic frequency capable system by simply
+	  loading your cpufreq low-level hardware driver.
+	  Be aware that not all cpufreq drivers support the lagfree
+	  governor. If unsure have a look at the help section of the
+	  driver. Fallback governor will be the performance governor.
+
 config CPU_FREQ_DEFAULT_GOV_ZZMOOVE
-	  bool "zzmoove"
-	  select CPU_FREQ_GOV_ZZMOOVE
-	  select CPU_FREQ_GOV_PERFORMANCE
-	  help
+	bool "zzmoove"
+	select CPU_FREQ_GOV_ZZMOOVE
+	select CPU_FREQ_GOV_PERFORMANCE
+	help
 	  Use the CPUFreq governor 'zzmoove' as default, using predefined
 	  frequency lookup tables and optimized scaling triggers instead of
 	  % frequency steps to get smooth up/downscaling dependant on CPU load.
@@ -477,6 +483,12 @@ config CPU_FREQ_GOV_LIONHEART
 
 	  If in doubt, say N.
 
+config CPU_FREQ_GOV_LULZACTIVE
+	tristate "'lulzactive' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	    'lulzactive' - hotplug mechanism added in lulzactive
+
 config CPU_FREQ_GOV_LULZACTIVEQ
 	tristate "'lulzactiveq' cpufreq governor"
 	depends on CPU_FREQ
@@ -589,7 +601,6 @@ config CPU_FREQ_GOV_ZZMOOVE
 	  % frequency steps to get smooth up/downscaling dependant on CPU load.
 
 	  If in doubt, say N.
-
 
 config CPU_FREQ_SYNC_SCALING
 	bool "Apply governor scaling to the two CPU cores"
