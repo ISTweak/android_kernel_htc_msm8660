@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -289,6 +289,27 @@ u32 ddl_encode_start(u32 *ddl_handle, void *client_data)
 		ddl_free_enc_hw_buffers(ddl);
 		DDL_MSG_ERROR("ddl_enc_start:Seq_hdr_alloc_failed");
 		return VCD_ERR_ALLOC_FAIL;
+	}
+	if (encoder->slice_delivery_info.enable) {
+		DDL_MSG_LOW("%s: slice mode allocate memory for struct\n",
+					__func__);
+		ptr = ddl_pmem_alloc(&encoder->batch_frame.slice_batch_in,
+				DDL_ENC_SLICE_BATCH_INPSTRUCT_SIZE,
+				DDL_LINEAR_BUFFER_ALIGN_BYTES);
+		if (ptr) {
+			ptr = ddl_pmem_alloc(
+				&encoder->batch_frame.slice_batch_out,
+				DDL_ENC_SLICE_BATCH_OUTSTRUCT_SIZE,
+				DDL_LINEAR_BUFFER_ALIGN_BYTES);
+		}
+		if (!ptr) {
+			ddl_pmem_free(&encoder->batch_frame.slice_batch_in);
+			ddl_pmem_free(&encoder->batch_frame.slice_batch_out);
+			ddl_free_enc_hw_buffers(ddl);
+			ddl_pmem_free(&encoder->seq_header);
+			DDL_MSG_ERROR("ddlEncStart:SeqHdrAllocFailed");
+			return VCD_ERR_ALLOC_FAIL;
+		}
 	}
 	if (encoder->slice_delivery_info.enable) {
 		DDL_MSG_LOW("%s: slice mode allocate memory for struct\n",
