@@ -3657,7 +3657,7 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
  */
 void freeze_workqueues_begin(void)
 {
-	unsigned int cpu;
+	unsigned int cpu = 0;
 
 	spin_lock(&workqueue_lock);
 
