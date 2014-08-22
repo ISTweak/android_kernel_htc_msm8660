@@ -23,7 +23,7 @@
 #include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/cache.h>
-#include <linux/module.h>
+#include <linux/export.h>
 #include <linux/mount.h>
 #include <linux/file.h>
 #include <asm/uaccess.h>
@@ -1532,7 +1532,7 @@ static struct dentry * __d_find_any_alias(struct inode *inode)
 	return alias;
 }
 
-static struct dentry * d_find_any_alias(struct inode *inode)
+struct dentry * d_find_any_alias(struct inode *inode)
 {
 	struct dentry *de;
 
@@ -1541,7 +1541,7 @@ static struct dentry * d_find_any_alias(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 	return de;
 }
-
+EXPORT_SYMBOL(d_find_any_alias);
 
 /**
  * d_obtain_alias - find or allocate a dentry for a given inode
