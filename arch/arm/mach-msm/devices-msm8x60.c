@@ -746,7 +746,7 @@ static struct msm_bus_vectors grp3d_low_vectors[] = {
 		.src = MSM_BUS_MASTER_GRAPHICS_3D,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(1920),		//240 MHz BUS for 228 MHz GPU
+		.ib = KGSL_CONVERT_TO_MBPS(990),
 	},
 };
 
@@ -755,7 +755,7 @@ static struct msm_bus_vectors grp3d_nominal_low_vectors[] = {
 		.src = MSM_BUS_MASTER_GRAPHICS_3D,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(2240),		//280 MHz BUS for 266 MHz GPU
+		.ib = KGSL_CONVERT_TO_MBPS(1300),
 	},
 };
 
