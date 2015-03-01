@@ -54,6 +54,9 @@
 #define VCD_REQ_PERF_LEVEL (VCD_START_BASE + 0x26)
 #define VCD_I_VOP_TIMING_CONSTANT_DELTA (VCD_START_BASE + 0x27)
 #define VCD_I_SLICE_DELIVERY_MODE (VCD_START_BASE + 0x28)
+#define VCD_I_GET_CURR_PERF_LEVEL (VCD_START_BASE + 0x30)
+#define VCD_I_ENABLE_VUI_BITSTREAM_RESTRICT_FLAG (VCD_START_BASE + 0x2F)
+#define VCD_I_CAPABILITY_LTR_COUNT (VCD_START_BASE + 0x35)
 
 #define VCD_START_REQ      (VCD_START_BASE + 0x1000)
 #define VCD_I_REQ_IFRAME   (VCD_START_REQ + 0x1)
@@ -323,6 +326,16 @@ struct vcd_frame_rect {
 	u32   top;
 	u32   right;
 	u32   bottom;
+};
+
+struct vcd_property_bitstream_restrict_enable {
+	u32 bitstream_restrict_enable_flag;
+};
+
+struct vcd_property_range_type {
+	u32 min;
+	u32 max;
+	u32 step_size;
 };
 
 struct vcd_property_dec_output_buffer {

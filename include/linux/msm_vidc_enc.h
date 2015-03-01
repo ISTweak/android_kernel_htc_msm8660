@@ -464,20 +464,20 @@ struct venc_ioctl_msg{
 #define VEN_IOCTL_SET_H263_PLUSPTYPE \
 	_IOW(VEN_IOCTLBASE_ENC, 51, struct venc_ioctl_msg)
 
-/*IOCTL params:SET: InputData - venc_range, OutputData - NULL.*/
-#define VEN_IOCTL_SET_CAPABILITY_LTRCOUNT \
-	_IOW(VEN_IOCTLBASE_ENC, 52, struct venc_ioctl_msg)
+/*IOCTL params:SET: InputData - NULL, OutputData - NULL.*/
+#define VEN_IOCTL_SET_VUI_BITSTREAM_RESTRICT_FLAG \
+	_IO(VEN_IOCTLBASE_ENC, 52)
 
-/*IOCTL params:GET: InputData - NULL, OutputData - venc_range.*/
-#define VEN_IOCTL_GET_CAPABILITY_LTRCOUNT \
+/*IOCTL params:GET: InputData - NULL, OutputData - unsigned int.*/
+#define VEN_IOCTL_GET_PERF_LEVEL \
 	_IOR(VEN_IOCTLBASE_ENC, 53, struct venc_ioctl_msg)
 
 /*IOCTL params:SET: InputData - venc_ltrmode, OutputData - NULL.*/
 #define VEN_IOCTL_SET_LTRMODE \
 	_IOW(VEN_IOCTLBASE_ENC, 54, struct venc_ioctl_msg)
 
-/*IOCTL params:GET: InputData - NULL, OutputData - venc_ltrmode.*/
-#define VEN_IOCTL_GET_LTRMODE \
+/*IOCTL params:GET: InputData - NULL, OutputData - venc_range.*/
+#define VEN_IOCTL_GET_CAPABILITY_LTRCOUNT \
 	_IOR(VEN_IOCTLBASE_ENC, 55, struct venc_ioctl_msg)
 
 /*IOCTL params:SET: InputData - venc_ltrcount, OutputData - NULL.*/
@@ -516,13 +516,7 @@ struct venc_ioctl_msg{
 #define VEN_IOCTL_SET_SPS_PPS_FOR_IDR \
 	_IOW(VEN_IOCTLBASE_ENC, 64, struct venc_ioctl_msg)
 
-/*IOCTL params:SET: InputData - NULL, OutputData - NULL.*/ // 65 was 52
-#define VEN_IOCTL_SET_VUI_BITSTREAM_RESTRICT_FLAG \
-	_IO(VEN_IOCTLBASE_ENC, 65)
 
-/*IOCTL params:GET: InputData - NULL, OutputData - unsigned int.*/ // 66 was 52
-#define VEN_IOCTL_GET_PERF_LEVEL \
-	_IOR(VEN_IOCTLBASE_ENC, 66, struct venc_ioctl_msg)
 
 
 struct venc_range {
