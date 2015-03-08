@@ -15,7 +15,6 @@
 
 #ifndef _LINUX_MSM_ION_H
 #define _LINUX_MSM_ION_H
-
 #include <linux/ion.h>
 
 enum msm_ion_heap_types {
